@@ -1,6 +1,6 @@
 import unittest
 from datetime import timedelta
-from vivaldi.vivaldi_coordinates import NetworkCoordinate
+from vivaldi.vivaldi_coordinates import NetworkNode
 
 
 class TestNetworkCoordinate(unittest.TestCase):
@@ -9,8 +9,8 @@ class TestNetworkCoordinate(unittest.TestCase):
         self.assertAlmostEqual(a, b, delta=tol)
 
     def test_convergence(self):
-        a = NetworkCoordinate(2)
-        b = NetworkCoordinate(3)
+        a = NetworkNode(2)
+        b = NetworkNode(3)
         t = timedelta(milliseconds=250)
         for _ in range(20):
             a.update(b, t)
@@ -19,10 +19,10 @@ class TestNetworkCoordinate(unittest.TestCase):
         self.assertApproxEqual(rtt, 250.0, tol=1.0)
 
     def test_mini_network(self):
-        slc = NetworkCoordinate(2)
-        nyc = NetworkCoordinate(2)
-        lax = NetworkCoordinate(2)
-        mad = NetworkCoordinate(2)
+        slc = NetworkNode(2)
+        nyc = NetworkNode(2)
+        lax = NetworkNode(2)
+        mad = NetworkNode(2)
         
         error = (slc.error + nyc.error + lax.error + mad.error) ** 0.5
         self.assertApproxEqual(error, 20.0, tol=20.0)
