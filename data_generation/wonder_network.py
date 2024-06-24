@@ -11,7 +11,6 @@ def get_ping_ids() -> List[int]:
     separted_ids.pop(47)
     separted_ids.pop(50)
     separted_ids.pop(91)
-    print(len(separted_ids))
     return separted_ids
 
 
@@ -32,12 +31,4 @@ def get_random_latency_matrix_of_size(size: int):
     return latency_matrix
 
 
-if __name__ == "__main__":
-    ids = get_ping_ids()
-    for i in range(1, 200):
-        print(i)
-        try:
-            get_random_latency_matrix_of_size(i)
-        except RuntimeError:
-            ids.pop(i)
-        print(ids)
+

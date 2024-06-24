@@ -28,7 +28,7 @@ class InflationAttack(CoordinatesAttackStrategy):
     def attack(self, node: 'NetworkNode'):
         """Simulate inflation by setting node's coordinates unusually high."""
         node.coordinates.coordinates = [1000, 1000, 1000]  # Example of inflated coordinates
-
+        return node
 
 class DeflationAttack(CoordinatesAttackStrategy):
     def attack(self, node: 'NetworkNode') -> 'NetworkNode':
@@ -90,7 +90,7 @@ class NetworkCoordinates:
     def normalized(self):
         norm_len = self.len()
         if norm_len == 0:
-            raise ValueError("Cannot normalize zero-length vector")
+            norm_len = 0.1
         return self * (1.0 / norm_len)
 
     @staticmethod
@@ -125,9 +125,12 @@ class NetworkNode:
     def set_strategy(self, strategy):
         self.strategy = strategy
 
+    def use_attack(self) -> 'NetworkNode':
+        node_after_attack = self.strategy.attack(self)
+        return node_after_attack
+
     def estimated_rtt(self, rhs: 'NetworkNode') -> timedelta:
-        rhs_after_strategy = rhs.strategy.attack(rhs)
-        rtt_estimate = (self.coordinates - rhs_after_strategy.coordinates).len() / 1000.0
+        rtt_estimate = (self.coordinates - rhs.coordinates).len() / 1000.0
         return timedelta(seconds=rtt_estimate)
 
     def _update(self, rhs: 'NetworkNode', rtt: timedelta):
@@ -158,9 +161,7 @@ class NetworkNode:
 
     def update(self, rhs: 'NetworkNode', rtt: timedelta) -> 'NetworkNode':
         if self.check_first_invariant():
-            print("Validated one of invariants")
             return self
-        print("Normal update")
         return self._update(rhs, rtt)
 
     def update_without_invariants(self, rhs: 'NetworkNode', rtt: timedelta):

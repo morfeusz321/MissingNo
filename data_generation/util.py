@@ -1,30 +1,50 @@
-from matrix_utils import generate_random_matrix
+import random
+from datetime import timedelta
 
 
-def load_data():
-    rounds = [generate_random_matrix(2000, 0, 1) for _ in range(5)]
-    ip_to_id = {}
-    discovered_nodes = 0
+def read_latency_matrix(file_path: str):
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
 
-    with open('../data/king_data.txt', 'r') as file:
-        for line in file:
-            print(line)
-            ip_source, _, id_destination, round, first_lookup, second_lookup = line.split()
-            latency = int(first_lookup) - int(second_lookup)
+    latency_matrix = []
+    for line in lines:
+        # Splitting each line by any whitespace, which handles spaces and tabs
+        parsed_line = [float(value) if float(value) != -1 else 500000 for value in line.split()]
+        latency_matrix.append(parsed_line)
 
-            if ip_source not in ip_to_id:
-                ip_to_id[ip_source] = discovered_nodes
-                discovered_nodes += 1
-
-            if id_destination not in ip_to_id:
-                ip_to_id[id_destination] = discovered_nodes
-                discovered_nodes += 1
-            print(discovered_nodes)
-            print(ip_to_id)
-            rounds[int(round)-1][ip_to_id[ip_source]][ip_to_id[id_destination]] = latency
-
-    return rounds, ip_to_id
+    return latency_matrix
 
 
-if __name__ == '__main__':
-    load_data()
+def get_processed_latencies(latency_matrix):
+    processed_latencies = []
+    for row in latency_matrix:
+        # Convert microseconds to milliseconds and store as timedelta objects
+        processed_row = [timedelta(milliseconds=float(value)) for value in row]
+        processed_latencies.append(processed_row)
+
+    return processed_latencies
+
+
+def select_n_nodes(latency_matrix, n, random_selection=True):
+    """ Selects n nodes from the latency matrix either randomly or the first n."""
+    if random_selection:
+        selected_indices = random.sample(range(len(latency_matrix)), n)
+    else:
+        selected_indices = list(range(n))  # Select the first n indices
+
+    # Create a new matrix including only the selected indices
+    reduced_matrix = []
+    for i in selected_indices:
+        reduced_row = [latency_matrix[i][j] for j in selected_indices]
+        reduced_matrix.append(reduced_row)
+
+    return reduced_matrix
+
+
+def get_latency_matrix(file_path, n, random_selection=False):
+    latency_matrix = read_latency_matrix(file_path)
+    processed_latencies = get_processed_latencies(latency_matrix)
+    n_processed = select_n_nodes(processed_latencies, n, random_selection)
+    return n_processed
+
+
